@@ -628,7 +628,7 @@ lib_deps =
 `
       }
     ],
-    githubUrl: 'https://github.com/your-username/esp32-air-quality-station',
+    githubUrl: 'https://github.com/LAM08092021/esp32-air-quality-station',
     simulationConfig: {
       hasOled: true,
       hasBuzzer: true,
@@ -834,7 +834,7 @@ void loop() {
 `
       }
     ],
-    githubUrl: 'https://github.com/your-username/esp32-pzem-energy-monitor',
+    githubUrl: 'https://github.com/LAM08092021/esp32-pzem-energy-monitor',
     simulationConfig: {
       hasOled: false,
       hasBuzzer: true,
@@ -1016,7 +1016,7 @@ void loop() {}
 `
       }
     ],
-    githubUrl: 'https://github.com/your-username/esp32-lorawan-agriculture',
+    githubUrl: 'https://github.com/LAM08092021/esp32-lorawan-agriculture',
     simulationConfig: {
       hasOled: false,
       hasBuzzer: false,
@@ -1058,12 +1058,12 @@ void loop() {}
 ];
 
 export const defaultUserProfile = {
-  name: 'Lê Hoàng Minh',
+  name: 'Trương Xuân Lâm',
   title: 'IoT & Embedded Systems Engineer',
   tagline: 'Chuyên nghiên cứu và thiết kế các hệ thống nhúng, vi điều khiển ESP32/STM32, giao thức mạng IoT & giải pháp phần cứng tối ưu chi phí.',
-  email: 'hoangminh.iot@gmail.com',
-  github: 'https://github.com/hoangminh-iot',
-  linkedin: 'https://linkedin.com/in/hoangminh-iot',
+  email: 'xuanlamlt2021@gmail.com',
+  github: 'https://github.com/LAM08092021',
+  linkedin: 'https://linkedin.com/in/xuanlam-iot',
   skills: [
     'ESP32 / ESP8266',
     'STM32 ARM Cortex-M',

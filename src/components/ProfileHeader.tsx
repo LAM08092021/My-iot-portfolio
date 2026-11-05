@@ -104,33 +104,52 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               )}
 
               {/* Social / Contact links */}
-              <div className="flex items-center gap-3 pt-2 text-xs text-slate-300 flex-wrap">
-                <a
-                  href={`mailto:${profile.email}`}
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors bg-slate-800/60 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60"
-                >
-                  <Mail className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>{profile.email}</span>
-                </a>
-                <a
-                  href={profile.github}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors bg-slate-800/60 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60"
-                >
-                  <Globe className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>GitHub</span>
-                </a>
-                <a
-                  href={profile.linkedin}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors bg-slate-800/60 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60"
-                >
-                  <Globe className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>LinkedIn</span>
-                </a>
-              </div>
+              {isEditing ? (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2 text-xs">
+                  <input
+                    type="email"
+                    placeholder="Email của bạn"
+                    value={profile.email}
+                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                    className="bg-slate-800 text-slate-200 px-2 py-1 rounded border border-cyan-500/50"
+                  />
+                  <input
+                    type="url"
+                    placeholder="Link GitHub"
+                    value={profile.github}
+                    onChange={(e) => setProfile({ ...profile, github: e.target.value })}
+                    className="bg-slate-800 text-slate-200 px-2 py-1 rounded border border-cyan-500/50"
+                  />
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 pt-2 text-xs text-slate-300 flex-wrap">
+                  <a
+                    href={`mailto:${profile.email}`}
+                    className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors bg-slate-800/60 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60"
+                  >
+                    <Mail className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>{profile.email}</span>
+                  </a>
+                  <a
+                    href={profile.github}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors bg-slate-800/60 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>GitHub</span>
+                  </a>
+                  <a
+                    href={profile.linkedin}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors bg-slate-800/60 hover:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700/60"
+                  >
+                    <Globe className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>LinkedIn</span>
+                  </a>
+                </div>
+              )}
             </div>
           </div>
 
