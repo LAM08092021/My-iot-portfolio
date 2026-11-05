@@ -36,8 +36,6 @@
 ## 🛠️ Hướng Dẫn Chạy Cục Bộ (Local)
 
 ```bash
-# Di chuyển vào thư mục dự án
-cd "C:\Users\ADMIN\.gemini\antigravity\scratch\iot-portfolio-hub"
 
 # Chạy server phát triển
 npm run dev
