@@ -23,24 +23,42 @@ export const HardwareSimulator: React.FC<HardwareSimulatorProps> = ({ project })
   const [logs, setLogs] = useState<string[]>([]);
   const audioCtxRef = useRef<AudioContext | null>(null);
 
-  // Derive status
+  const isCameraProject = project.id === 'iot-ai-surveillance-camera';
+
+  // Camera specific variables
+  const pirVal = sensorValues['pir_motion'] ?? 15;
+  const aiConfVal = sensorValues['ai_confidence'] ?? 20;
+  const lightVal = sensorValues['ambient_light'] ?? 350;
+
+  // Air quality specific variables
   const pm25 = sensorValues['pm25'] ?? 24;
   const gas = sensorValues['mq135'] ?? 45;
   const temp = sensorValues['temp'] ?? 28;
   const hum = sensorValues['humidity'] ?? 60;
 
-  // Calculate AQI
+  // Derive status
   let aqi = 35;
   let status: 'GOOD' | 'MODERATE' | 'HAZARDOUS' = 'GOOD';
-  if (pm25 <= 35 && gas < 100) {
-    aqi = Math.round((pm25 / 35) * 50);
-    status = 'GOOD';
-  } else if (pm25 <= 75 || gas < 180) {
-    aqi = 50 + Math.round(((pm25 - 35) / 40) * 50);
-    status = 'MODERATE';
+
+  if (isCameraProject) {
+    if (pirVal < 45 && aiConfVal < 50) {
+      status = 'GOOD'; // An toàn / Canh phòng
+    } else if (pirVal >= 45 && aiConfVal < 70) {
+      status = 'MODERATE'; // Phát hiện chuyển động (Chờ AI xác nhận)
+    } else {
+      status = 'HAZARDOUS'; // Xác nhận có người xâm nhập
+    }
   } else {
-    aqi = 100 + Math.round(((pm25 - 75) / 125) * 100);
-    status = 'HAZARDOUS';
+    if (pm25 <= 35 && gas < 100) {
+      aqi = Math.round((pm25 / 35) * 50);
+      status = 'GOOD';
+    } else if (pm25 <= 75 || gas < 180) {
+      aqi = 50 + Math.round(((pm25 - 35) / 40) * 50);
+      status = 'MODERATE';
+    } else {
+      aqi = 100 + Math.round(((pm25 - 75) / 125) * 100);
+      status = 'HAZARDOUS';
+    }
   }
 
   // Audio Buzzer Beep using Web Audio API
@@ -88,12 +106,17 @@ export const HardwareSimulator: React.FC<HardwareSimulatorProps> = ({ project })
       });
 
       const now = new Date().toTimeString().split(' ')[0];
-      const logLine = `[${now}] MQTT PUB -> {"pm25":${pm25},"gas":${gas},"temp":${temp},"hum":${hum},"aqi":${aqi}}`;
+      let logLine = '';
+      if (isCameraProject) {
+        logLine = `[${now}] CAM_PIR: ${pirVal}% | AI_CONF: ${aiConfVal}% | LIGHT: ${lightVal}Lx | STATUS: ${status} | SD: OK`;
+      } else {
+        logLine = `[${now}] MQTT PUB -> {"pm25":${pm25},"gas":${gas},"temp":${temp},"hum":${hum},"aqi":${aqi}}`;
+      }
       setLogs((prev) => [logLine, ...prev.slice(0, 7)]);
-    }, 2500);
+    }, 2000);
 
     return () => clearInterval(timer);
-  }, [pm25, gas, temp, hum, aqi]);
+  }, [pm25, gas, temp, hum, aqi, pirVal, aiConfVal, lightVal, status, isCameraProject]);
 
   const handleSliderChange = (id: string, val: number) => {
     setSensorValues((prev) => ({ ...prev, [id]: val }));
@@ -166,66 +189,130 @@ export const HardwareSimulator: React.FC<HardwareSimulatorProps> = ({ project })
             </span>
           </div>
 
-          {/* Virtual OLED Display 128x64 */}
-          <div>
-            <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5">
-              Màn hình OLED 0.96" SSD1306 (I2C 0x3C):
-            </span>
-            <div className="relative bg-[#020b14] border-4 border-slate-800 rounded-xl p-4 shadow-inner max-w-sm mx-auto font-mono text-cyan-300">
-              {/* Screen Content */}
-              <div className="flex items-baseline justify-between border-b border-cyan-800/60 pb-1.5">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-xs text-cyan-400 font-bold">AQI:</span>
-                  <span className="text-2xl font-black text-cyan-200">{aqi}</span>
-                </div>
-                <span
-                  className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                    status === 'GOOD'
-                      ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
-                      : status === 'MODERATE'
-                      ? 'bg-amber-950 text-amber-300 border border-amber-500/40'
-                      : 'bg-red-950 text-red-300 border border-red-500/40 animate-pulse'
-                  }`}
-                >
-                  [{status}]
+          {/* Main Visual Display (Camera Viewfinder or OLED Display) */}
+          {isCameraProject ? (
+            <div>
+              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5 flex items-center justify-between">
+                <span>Luồng Cảm Biến Ảnh OV2640 & AI Bounding Box:</span>
+                <span className="text-rose-400 text-[10px] font-semibold bg-rose-950/60 px-2 py-0.5 rounded border border-rose-800/40">
+                  {status === 'HAZARDOUS' ? '🚨 INTRUDER CONFIRMED' : status === 'MODERATE' ? '⚠️ MOTION DETECTED' : '🛡️ ARMED & STANDBY'}
                 </span>
-              </div>
+              </span>
 
-              {/* Data lines */}
-              <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-xs mt-2.5">
-                <div>
-                  <span className="text-cyan-400/80 text-[10px] block">PM2.5:</span>
-                  <span className="font-bold text-sm text-cyan-100">{pm25} µg/m³</span>
+              {/* Camera Viewfinder Screen */}
+              <div className="relative bg-[#020b14] border-4 border-slate-800 rounded-xl p-4 shadow-inner max-w-sm mx-auto font-mono text-cyan-300 overflow-hidden min-h-[160px] flex flex-col justify-between">
+                {/* Camera Viewfinder Overlay Grid */}
+                <div className="absolute inset-0 bg-gradient-to-b from-cyan-950/20 via-transparent to-slate-950/40 pointer-events-none" />
+                
+                {/* Header Info */}
+                <div className="relative z-10 flex items-center justify-between text-[11px] border-b border-cyan-800/40 pb-1 text-slate-400">
+                  <span className="flex items-center gap-1.5 text-cyan-300 font-bold">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                    REC [1600x1200 UXGA]
+                  </span>
+                  <span>FPS: 25.4 | SD: 32GB</span>
                 </div>
-                <div>
-                  <span className="text-cyan-400/80 text-[10px] block">Gas MQ135:</span>
-                  <span className="font-bold text-sm text-cyan-100">{gas} PPM</span>
-                </div>
-                <div>
-                  <span className="text-cyan-400/80 text-[10px] block">Nhiệt độ:</span>
-                  <span className="font-semibold text-cyan-200">{temp}°C</span>
-                </div>
-                <div>
-                  <span className="text-cyan-400/80 text-[10px] block">Độ ẩm:</span>
-                  <span className="font-semibold text-cyan-200">{hum}% RH</span>
-                </div>
-              </div>
 
-              {/* Sparkline mini chart */}
-              <div className="mt-3 pt-2 border-t border-cyan-900/60 flex items-end justify-between h-8 gap-1">
-                {history.map((val, idx) => {
-                  const h = Math.min(Math.max((val / 100) * 28, 4), 28);
-                  return (
-                    <div
-                      key={idx}
-                      style={{ height: `${h}px` }}
-                      className="flex-1 bg-cyan-400/70 rounded-t-xs"
-                    />
-                  );
-                })}
+                {/* AI Target Detection Bounding Box */}
+                <div className="relative z-10 my-3 flex items-center justify-center">
+                  {status === 'HAZARDOUS' ? (
+                    <div className="border-2 border-rose-500 bg-rose-500/10 rounded-lg p-3 text-center animate-pulse w-full max-w-[200px]">
+                      <span className="text-xs font-bold text-rose-300 block tracking-wide">
+                        [ PERSON IDENTIFIED ]
+                      </span>
+                      <span className="text-[11px] text-white font-mono font-bold block mt-0.5">
+                        CONFIDENCE: {aiConfVal}%
+                      </span>
+                      <span className="text-[9px] text-rose-400 block mt-1 uppercase">
+                        Snapshot Sent to Telegram!
+                      </span>
+                    </div>
+                  ) : status === 'MODERATE' ? (
+                    <div className="border border-amber-500/70 border-dashed rounded-lg p-2 text-center w-full max-w-[180px]">
+                      <span className="text-[11px] font-bold text-amber-300 block">
+                        [ MOTION VECTOR: {pirVal}% ]
+                      </span>
+                      <span className="text-[10px] text-slate-400 block">
+                        AI Scanning Frame...
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-slate-500 text-xs">
+                      <span className="block text-emerald-400 font-bold">[ NO MOTION ]</span>
+                      <span className="text-[10px] block mt-0.5">PIR Standing By (2.5mA)</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer Metrics */}
+                <div className="relative z-10 flex items-center justify-between text-[10px] text-slate-400 border-t border-cyan-900/40 pt-1">
+                  <span>PIR: {pirVal}%</span>
+                  <span>Flash: {status === 'HAZARDOUS' ? '100% ON' : 'OFF'}</span>
+                  <span>Light: {lightVal} Lux</span>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div>
+              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block mb-1.5">
+                Màn hình OLED 0.96" SSD1306 (I2C 0x3C):
+              </span>
+              <div className="relative bg-[#020b14] border-4 border-slate-800 rounded-xl p-4 shadow-inner max-w-sm mx-auto font-mono text-cyan-300">
+                {/* Screen Content */}
+                <div className="flex items-baseline justify-between border-b border-cyan-800/60 pb-1.5">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-xs text-cyan-400 font-bold">AQI:</span>
+                    <span className="text-2xl font-black text-cyan-200">{aqi}</span>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                      status === 'GOOD'
+                        ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+                        : status === 'MODERATE'
+                        ? 'bg-amber-950 text-amber-300 border border-amber-500/40'
+                        : 'bg-red-950 text-red-300 border border-red-500/40 animate-pulse'
+                    }`}
+                  >
+                    [{status}]
+                  </span>
+                </div>
+
+                {/* Data lines */}
+                <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-xs mt-2.5">
+                  <div>
+                    <span className="text-cyan-400/80 text-[10px] block">PM2.5:</span>
+                    <span className="font-bold text-sm text-cyan-100">{pm25} µg/m³</span>
+                  </div>
+                  <div>
+                    <span className="text-cyan-400/80 text-[10px] block">Gas MQ135:</span>
+                    <span className="font-bold text-sm text-cyan-100">{gas} PPM</span>
+                  </div>
+                  <div>
+                    <span className="text-cyan-400/80 text-[10px] block">Nhiệt độ:</span>
+                    <span className="font-semibold text-cyan-200">{temp}°C</span>
+                  </div>
+                  <div>
+                    <span className="text-cyan-400/80 text-[10px] block">Độ ẩm:</span>
+                    <span className="font-semibold text-cyan-200">{hum}% RH</span>
+                  </div>
+                </div>
+
+                {/* Sparkline mini chart */}
+                <div className="mt-3 pt-2 border-t border-cyan-900/60 flex items-end justify-between h-8 gap-1">
+                  {history.map((val, idx) => {
+                    const h = Math.min(Math.max((val / 100) * 28, 4), 28);
+                    return (
+                      <div
+                        key={idx}
+                        style={{ height: `${h}px` }}
+                        className="flex-1 bg-cyan-400/70 rounded-t-xs"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Indicators row: 3 LEDs & Buzzer */}
           <div className="grid grid-cols-2 gap-4 pt-2">

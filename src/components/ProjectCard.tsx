@@ -21,6 +21,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project, onSelectProje
         return 'text-lime-400 bg-lime-500/10 border-lime-500/30';
       case 'Industrial':
         return 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30';
+      case 'AI Vision & Security':
+        return 'text-rose-400 bg-rose-500/10 border-rose-500/30';
       default:
         return 'text-purple-400 bg-purple-500/10 border-purple-500/30';
     }

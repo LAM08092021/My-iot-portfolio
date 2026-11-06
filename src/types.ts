@@ -32,7 +32,7 @@ export interface IoTProject {
   title: string;
   slug: string;
   tagline: string;
-  category: 'Environment' | 'Smart Home' | 'Agriculture' | 'Industrial' | 'Health & Wearable';
+  category: 'Environment' | 'Smart Home' | 'Agriculture' | 'Industrial' | 'Health & Wearable' | 'AI Vision & Security';
   mcu: string; // e.g. ESP32 NodeMCU-32S
   status: 'Completed' | 'In Progress' | 'Prototype';
   completionDate: string;

@@ -28,6 +28,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         return 'Nông Nghiệp LoRa';
       case 'Industrial':
         return 'Công Nghiệp';
+      case 'AI Vision & Security':
+        return 'Camera AI & An Ninh';
       default:
         return c;
     }

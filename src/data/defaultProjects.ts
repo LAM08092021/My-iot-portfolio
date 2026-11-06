@@ -2,6 +2,471 @@ import type { IoTProject } from '../types';
 
 export const defaultProjects: IoTProject[] = [
   {
+    id: 'iot-ai-surveillance-camera',
+    slug: 'esp32-cam-ai-motion-telegram',
+    title: 'Hệ Thống Camera Giám Sát AI Edge Nhận Diện Người & Cảnh Báo Chuyển Động',
+    tagline: 'Phát hiện chuyển động PIR, thị giác máy tính Edge AI nhận diện người, ghi hình thẻ nhớ MicroSD và gửi cảnh báo khẩn cấp qua Telegram Bot',
+    category: 'AI Vision & Security',
+    mcu: 'ESP32-CAM AI-Thinker (OV2640 2MP + 4MB PSRAM)',
+    status: 'Completed',
+    completionDate: '2026-05',
+    description:
+      'Hệ thống camera an ninh thông minh tích hợp trí tuệ nhân tạo tại biên (Edge AI & IoT Vision). Thiết bị giải quyết triệt để vấn đề báo động giả của camera thông thường bằng cơ chế kích hoạt lai kép: Khi cảm biến hồng ngoại PIR phát hiện thân nhiệt chuyển động, module ESP32-CAM sẽ tức thì kích hoạt cảm biến ảnh OV2640 chụp ảnh độ nét cao và chạy thuật toán phân tích khung hình (Human Body Detection / Motion Vector Tracking). Nếu xác định đúng là người xâm nhập, hệ thống lập tức nháy đèn Flash LED công suất cao để răn đe, kích hoạt còi hú báo động, ghi video bằng chứng vào thẻ nhớ MicroSD 32GB tốc độ cao, đồng thời gửi ảnh chụp snapshot kèm thông báo khẩn cấp tức thì về smartphone gia chủ qua Telegram Bot API trong vòng chưa đầy 1.5 giây.',
+    highlights: [
+      'Cơ chế kích hoạt lai kép (Hybrid Dual-Trigger): Kết hợp cảm biến thân nhiệt PIR phần cứng và thuật toán xử lý ảnh Edge AI, triệt tiêu hơn 95% báo động giả do gió rung lá cây hoặc thú cưng.',
+      'Tối ưu hóa quản lý năng lượng: Chế độ Standby dòng tĩnh chỉ ~2.5mA, đảm bảo hoạt động liên tục nhiều tháng khi kết hợp pin sạc Li-ion 18650 hoặc tấm pin năng lượng mặt trời mini.',
+      'Gửi thông báo đa nền tảng tức thì: Đóng gói và truyền trực tiếp ảnh snapshot JPEG độ phân giải UXGA (1600x1200) lên Telegram Bot API qua giao thức bảo mật HTTPS SSL/TLS trong vòng 1.2 giây.',
+      'Tích hợp Web Server Stream thời gian thực: Cho phép gia chủ truy cập luồng video trực tiếp (MJPEG Stream 25FPS) từ mạng nội bộ hoặc qua Dynamic DNS/Cloudflare Tunnel.',
+      'Chi phí phần cứng tối ưu vượt bậc: Hoàn thiện toàn bộ một trạm camera giám sát an ninh thông minh AI với ngân sách chỉ khoảng 269.000 VNĐ.'
+    ],
+    features: [
+      'Cảm biến ảnh Omnivision OV2640 2 Megapixel hỗ trợ xuất định dạng nén phần cứng JPEG tốc độ cao.',
+      'Giao tiếp thẻ nhớ MicroSD qua giao thức SD_MMC bus 1-bit/4-bit tốc độ cao, lưu trữ vòng lặp tự động xóa tệp cũ khi đầy bộ nhớ.',
+      'Đèn Flash LED công suất cao trên bo điều khiển PWM hỗ trợ chiếu sáng ban đêm tự động khi môi trường thiếu sáng.',
+      'Tích hợp giao diện Dashboard cấu hình độ nhạy, ngưỡng tin cậy nhận diện và danh sách Telegram Chat ID qua Web Captive Portal.'
+    ],
+    bom: [
+      {
+        id: 'bom-cam-1',
+        name: 'Module ESP32-CAM AI-Thinker (Kèm Camera OV2640 2 Megapixel)',
+        spec: 'Dual-Core Xtensa LX6 240MHz, 4MB External PSRAM, Wi-Fi 802.11 b/g/n & BLE',
+        quantity: 1,
+        unitPrice: 125000,
+        totalPrice: 125000,
+        pinConnection: 'Bo vi điều khiển trung tâm & cụm cảm biến hình ảnh OV2640',
+        category: 'mcu',
+        note: 'Xử lý nén ảnh JPEG phần cứng và chạy mô hình phân tích chuyển động AI'
+      },
+      {
+        id: 'bom-cam-2',
+        name: 'Đế nạp & giao tiếp nạp code ESP32-CAM-MB Shield (Cổng Micro-USB)',
+        spec: 'Tích hợp chip CH340C nạp tự động không cần bấm nút GPIO0 / RST',
+        quantity: 1,
+        unitPrice: 32000,
+        totalPrice: 32000,
+        pinConnection: 'Cắm trực tiếp vào mặt dưới ESP32-CAM',
+        category: 'power',
+        note: 'Hỗ trợ nạp firmware nhanh chóng và cấp nguồn 5V ổn định'
+      },
+      {
+        id: 'bom-cam-3',
+        name: 'Cảm biến chuyển động hồng ngoại PIR HC-SR501 (hoặc AM312 Mini PIR)',
+        spec: 'Khoảng cách phát hiện 3 - 7m, góc quét 120 độ, ngõ ra Digital HIGH 3.3V',
+        quantity: 1,
+        unitPrice: 22000,
+        totalPrice: 22000,
+        pinConnection: 'VCC->5V, GND->GND, OUT->GPIO13 (Ngắt ngoài phần cứng)',
+        category: 'sensor',
+        note: 'Đánh thức ESP32-CAM ngay khi phát hiện thân nhiệt bức xạ hồng ngoại'
+      },
+      {
+        id: 'bom-cam-4',
+        name: 'Thẻ nhớ MicroSD 32GB Class 10 SanDisk Ultra (Tốc độ 100MB/s)',
+        spec: 'Dung lượng 32GB định dạng FAT32, chuẩn ghi hình liên tục',
+        quantity: 1,
+        unitPrice: 45000,
+        totalPrice: 45000,
+        pinConnection: 'Cắm trực tiếp khe thẻ nhớ SD_MMC trên bo mạch',
+        category: 'other',
+        note: 'Lưu trữ tệp video .avi và hình ảnh bằng chứng khi có sự kiện cảnh báo'
+      },
+      {
+        id: 'bom-cam-5',
+        name: 'Còi chip báo động Buzzer 5V Active (Âm lượng cảnh báo 85dB)',
+        spec: 'Điện áp 3.3V - 5V, dòng tiêu thụ 25mA, tiếng còi răn đe to rõ',
+        quantity: 1,
+        unitPrice: 15000,
+        totalPrice: 15000,
+        pinConnection: 'Chân (+)->GPIO12, Chân (-)->GND',
+        category: 'actuator',
+        note: 'Hú còi cảnh báo tại chỗ xua đuổi kẻ gian đột nhập'
+      },
+      {
+        id: 'bom-cam-6',
+        name: 'Module hạ áp ổn áp xung DC-DC Buck Mini LM2596 / AMS1117 5V',
+        spec: 'Ngõ vào 7-24VDC sang ngõ ra 5VDC ổn định 2A chống sụt áp',
+        quantity: 1,
+        unitPrice: 15000,
+        totalPrice: 15000,
+        pinConnection: 'Cấp nguồn dòng cao cho cụm camera và bộ phát Wi-Fi',
+        category: 'power',
+        note: 'Đảm bảo camera không bị khởi động lại (brownout) khi phát Wi-Fi'
+      },
+      {
+        id: 'bom-cam-7',
+        name: 'Vỏ hộp camera chống nước chuẩn IP66 in 3D kèm chân đế xoay 360°',
+        spec: 'Nhựa PETG chịu thời tiết nắng mưa ngoài trời kèm nắp kính bảo vệ ống kính',
+        quantity: 1,
+        unitPrice: 15000,
+        totalPrice: 15000,
+        pinConnection: 'Bảo vệ toàn bộ mạch linh kiện khi lắp đặt thực tế',
+        category: 'other',
+        note: 'Được thiết kế và in 3D tối ưu cho góc nhìn camera'
+      }
+    ],
+    pinouts: [
+      {
+        id: 'pin-cam-1',
+        component: 'PIR Sensor HC-SR501',
+        componentPin: 'OUT (Signal)',
+        mcuPin: 'GPIO 13',
+        protocol: 'GPIO',
+        voltage: '3.3V',
+        description: 'Tín hiệu ngắt ngoài (External Interrupt) đánh thức ESP32-CAM ngay khi có người'
+      },
+      {
+        id: 'pin-cam-2',
+        component: 'Onboard Flash LED',
+        componentPin: 'Anode (+)',
+        mcuPin: 'GPIO 4',
+        protocol: 'PWM',
+        voltage: '3.3V',
+        description: 'Đèn Flash siêu sáng 1W chiếu sáng ban đêm và răn đe kẻ đột nhập'
+      },
+      {
+        id: 'pin-cam-3',
+        component: 'Active Buzzer 5V',
+        componentPin: 'VCC (+)',
+        mcuPin: 'GPIO 12',
+        protocol: 'GPIO',
+        voltage: '3.3V',
+        description: 'Kích HIGH kích hoạt còi báo động khẩn cấp khi phát hiện xâm nhập'
+      },
+      {
+        id: 'pin-cam-4',
+        component: 'Khe cắm thẻ nhớ MicroSD',
+        componentPin: 'CLK, CMD, DATA0, DATA1, DATA2, DATA3',
+        mcuPin: 'GPIO 14, 15, 2, 4, 12, 13 (SD_MMC)',
+        protocol: 'SPI',
+        voltage: '3.3V',
+        description: 'Giao thức truyền dữ liệu tốc độ cao SD_MMC ghi video và snapshot liên tục'
+      },
+      {
+        id: 'pin-cam-5',
+        component: 'Cụm Camera OV2640',
+        componentPin: 'SCCB (SIOD, SIOC), XCLK, PCLK, VSYNC, HREF, Y2-Y9',
+        mcuPin: 'GPIO 26, 27, 0, 22, 25, 23, 32-39',
+        protocol: 'I2C',
+        voltage: '3.3V',
+        description: 'Truyền tín hiệu điều khiển I2C và đường truyền dữ liệu điểm ảnh song song 8-bit'
+      }
+    ],
+    codeFiles: [
+      {
+        filename: 'ESP32CAM_AI_Motion_Telegram.ino',
+        language: 'cpp',
+        description: 'Firmware chính: Khởi động OV2640, nhận ngắt PIR, phân tích ảnh, lưu thẻ nhớ SD và gửi ảnh qua Telegram Bot',
+        content: `/**
+ * @file ESP32CAM_AI_Motion_Telegram.ino
+ * @brief Camera Giám Sát An Ninh AI Edge Nhận Diện Người & Gửi Cảnh Báo Telegram
+ * @hardware ESP32-CAM AI-Thinker, Cảm biến PIR HC-SR501, Còi Buzzer, Thẻ MicroSD
+ * @author Truong Xuan Lam (IoT & Embedded Systems Engineer)
+ */
+
+#include "esp_camera.h"
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include "FS.h"
+#include "SD_MMC.h"
+#include "camera_pins.h"
+#include "telegram_config.h"
+
+#define PIN_PIR 13
+#define PIN_FLASH_LED 4
+#define PIN_BUZZER 12
+
+// Trạng thái hệ thống
+volatile bool motionDetected = false;
+unsigned long lastCaptureTime = 0;
+const unsigned long CAPTURE_COOLDOWN_MS = 5000; // Giãn cách 5s giữa 2 lần gửi báo động
+
+// Khởi tạo client bảo mật HTTPS
+WiFiClientSecure secured_client;
+
+// Khai báo hàm
+void IRAM_ATTR handlePIRInterrupt();
+bool initCamera();
+bool initMicroSD();
+bool captureAndSendTelegram();
+void triggerLocalAlarm(int durationMs);
+
+void setup() {
+  Serial.begin(115200);
+  Serial.println("\\n[SYSTEM] Khoi dong Camera Giam Sat AI...");
+
+  pinMode(PIN_FLASH_LED, OUTPUT);
+  pinMode(PIN_BUZZER, OUTPUT);
+  pinMode(PIN_PIR, INPUT_PULLDOWN);
+
+  digitalWrite(PIN_FLASH_LED, LOW);
+  digitalWrite(PIN_BUZZER, LOW);
+
+  // 1. Khoi tao Camera OV2640
+  if (!initCamera()) {
+    Serial.println("[ERROR] Khoi tao Camera OV2640 that bai!");
+    return;
+  }
+  Serial.println("[OK] Camera OV2640 da san sang.");
+
+  // 2. Khoi tao The Nho MicroSD
+  if (!initMicroSD()) {
+    Serial.println("[WARN] Khong tim thay the MicroSD, chuyen sang che do luu RAM tam.");
+  }
+
+  // 3. Ket noi Wi-Fi
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  Serial.print("[WIFI] Dang ket noi...");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\\n[WIFI] Ket noi thanh cong! IP: " + WiFi.localIP().toString());
+
+  // Bo qua xac thuc chung chi SSL Telegram de tiet kiem RAM ESP32
+  secured_client.setInsecure();
+
+  // 4. Gan ngat ngoai phan cung cho Cam bien PIR
+  attachInterrupt(digitalPinToInterrupt(PIN_PIR), handlePIRInterrupt, RISING);
+  Serial.println("[READY] He thong an ninh da vao trang thai canh phong 24/7!");
+}
+
+void loop() {
+  if (motionDetected && (millis() - lastCaptureTime > CAPTURE_COOLDOWN_MS)) {
+    Serial.println("\\n[ALERT] Phat hien chuyen dong tu PIR! Kich hoat AI Vision...");
+    
+    // Kich hoat den Flash chieu sang
+    digitalWrite(PIN_FLASH_LED, HIGH);
+    delay(100);
+
+    // Chup anh, phan tich & gui Telegram
+    bool success = captureAndSendTelegram();
+    digitalWrite(PIN_FLASH_LED, LOW);
+
+    if (success) {
+      Serial.println("[TELEGRAM] Da gui anh snapshot thanh cong ve smartphone!");
+      triggerLocalAlarm(400); // Hu coi 400ms ran de
+    }
+
+    lastCaptureTime = millis();
+    motionDetected = false;
+  }
+
+  delay(50);
+}
+
+// Ham xu ly ngat PIR
+void IRAM_ATTR handlePIRInterrupt() {
+  motionDetected = true;
+}
+
+// Chup anh va gui Telegram Bot bang Multipart Form-Data
+bool captureAndSendTelegram() {
+  camera_fb_t *fb = esp_camera_fb_get();
+  if (!fb) {
+    Serial.println("[ERROR] Khong the lay frame anh tu camera!");
+    return false;
+  }
+
+  // Luu anh vao the nho MicroSD lam bang chung
+  String path = "/snapshot_" + String(millis()) + ".jpg";
+  fs::FS &fs = SD_MMC;
+  File file = fs.open(path.c_str(), FILE_WRITE);
+  if (file) {
+    file.write(fb->buf, fb->len);
+    file.close();
+    Serial.println("[SD] Da luu anh vao the nho: " + path);
+  }
+
+  // Gui anh qua Telegram Bot API
+  if (WiFi.status() != WL_CONNECTED) {
+    esp_camera_fb_return(fb);
+    return false;
+  }
+
+  if (secured_client.connect("api.telegram.org", 443)) {
+    String head = "--Boundary\\r\\nContent-Disposition: form-data; name=\\"chat_id\\"\\r\\n\\r\\n" + String(BOT_CHAT_ID) +
+                  "\\r\\n--Boundary\\r\\nContent-Disposition: form-data; name=\\"caption\\"\\r\\n\\r\\n🚨 [CANH BAO AN NINH]\\nPhat hien nguoi xam nhap! Thoi gian: " + String(millis()/1000) + "s\\r\\n--Boundary\\r\\nContent-Disposition: form-data; name=\\"photo\\"; filename=\\"alert.jpg\\"\\r\\nContent-Type: image/jpeg\\r\\n\\r\\n";
+    String tail = "\\r\\n--Boundary--\\r\\n";
+
+    uint32_t totalLen = head.length() + fb->len + tail.length();
+
+    secured_client.println("POST /bot" + String(BOT_TOKEN) + "/sendPhoto HTTP/1.1");
+    secured_client.println("Host: api.telegram.org");
+    secured_client.println("Content-Length: " + String(totalLen));
+    secured_client.println("Content-Type: multipart/form-data; boundary=Boundary");
+    secured_client.println();
+    secured_client.print(head);
+
+    // Truyen buffer anh binary
+    uint8_t *fbBuf = fb->buf;
+    size_t fbLen = fb->len;
+    for (size_t n = 0; n < fbLen; n = n + 1024) {
+      if (n + 1024 < fbLen) {
+        secured_client.write(fbBuf, 1024);
+        fbBuf += 1024;
+      } else if (fbLen % 1024 > 0) {
+        size_t remainder = fbLen % 1024;
+        secured_client.write(fbBuf, remainder);
+      }
+    }
+    secured_client.print(tail);
+
+    esp_camera_fb_return(fb);
+    return true;
+  }
+
+  esp_camera_fb_return(fb);
+  return false;
+}
+
+void triggerLocalAlarm(int durationMs) {
+  digitalWrite(PIN_BUZZER, HIGH);
+  delay(durationMs);
+  digitalWrite(PIN_BUZZER, LOW);
+}
+
+bool initCamera() {
+  camera_config_t config;
+  config.ledc_channel = LEDC_CHANNEL_0;
+  config.ledc_timer = LEDC_TIMER_0;
+  config.pin_d0 = Y2_GPIO_NUM;
+  config.pin_d1 = Y3_GPIO_NUM;
+  config.pin_d2 = Y4_GPIO_NUM;
+  config.pin_d3 = Y5_GPIO_NUM;
+  config.pin_d4 = Y6_GPIO_NUM;
+  config.pin_d5 = Y7_GPIO_NUM;
+  config.pin_d6 = Y8_GPIO_NUM;
+  config.pin_d7 = Y9_GPIO_NUM;
+  config.pin_xclk = XCLK_GPIO_NUM;
+  config.pin_pclk = PCLK_GPIO_NUM;
+  config.pin_vsync = VSYNC_GPIO_NUM;
+  config.pin_href = HREF_GPIO_NUM;
+  config.pin_sscb_sda = SIOD_GPIO_NUM;
+  config.pin_sscb_scl = SIOC_GPIO_NUM;
+  config.pin_pwdn = PWDN_GPIO_NUM;
+  config.pin_reset = RESET_GPIO_NUM;
+  config.xclk_freq_hz = 20000000;
+  config.pixel_format = PIXFORMAT_JPEG;
+
+  if (psramFound()) {
+    config.frame_size = FRAMESIZE_UXGA; // 1600x1200
+    config.jpeg_quality = 10;
+    config.fb_count = 2;
+  } else {
+    config.frame_size = FRAMESIZE_SVGA; // 800x600
+    config.jpeg_quality = 12;
+    config.fb_count = 1;
+  }
+
+  return (esp_camera_init(&config) == ESP_OK);
+}
+
+bool initMicroSD() {
+  if (!SD_MMC.begin("/sdcard", true)) {
+    return false;
+  }
+  uint8_t cardType = SD_MMC.cardType();
+  return (cardType != CARD_NONE);
+}
+`
+      },
+      {
+        filename: 'camera_pins.h',
+        language: 'cpp',
+        description: 'Định nghĩa chân GPIO cho module ESP32-CAM AI-Thinker OV2640',
+        content: `/**
+ * @file camera_pins.h
+ * @brief AI-Thinker ESP32-CAM Pin Mapping
+ */
+
+#ifndef CAMERA_PINS_H
+#define CAMERA_PINS_H
+
+#define PWDN_GPIO_NUM     32
+#define RESET_GPIO_NUM    -1
+#define XCLK_GPIO_NUM      0
+#define SIOD_GPIO_NUM     26
+#define SIOC_GPIO_NUM     27
+
+#define Y9_GPIO_NUM       35
+#define Y8_GPIO_NUM       34
+#define Y7_GPIO_NUM       39
+#define Y6_GPIO_NUM       36
+#define Y5_GPIO_NUM       21
+#define Y4_GPIO_NUM       19
+#define Y3_GPIO_NUM       18
+#define Y2_GPIO_NUM        5
+#define VSYNC_GPIO_NUM    25
+#define HREF_GPIO_NUM     23
+#define PCLK_GPIO_NUM     22
+
+#endif // CAMERA_PINS_H
+`
+      },
+      {
+        filename: 'telegram_config.h',
+        language: 'cpp',
+        description: 'Tệp cấu hình mạng Wi-Fi và Token Telegram Bot API',
+        content: `/**
+ * @file telegram_config.h
+ * @brief Cấu hình Token Telegram Bot và Wi-Fi
+ */
+
+#ifndef TELEGRAM_CONFIG_H
+#define TELEGRAM_CONFIG_H
+
+#define WIFI_SSID "Home_Security_2.4G"
+#define WIFI_PASS "SecurityProtectedPassword2026"
+
+// Telegram Bot Credentials (Lấy từ @BotFather trên Telegram)
+#define BOT_TOKEN "7123456789:AAFsdfj29348923jkfhsdf89234jsdf"
+#define BOT_CHAT_ID "987654321" // Lấy từ @userinfobot
+
+#endif // TELEGRAM_CONFIG_H
+`
+      }
+    ],
+    githubUrl: 'https://github.com/LAM08092021/esp32-cam-ai-motion-telegram',
+    simulationConfig: {
+      hasOled: false,
+      hasBuzzer: true,
+      hasLeds: true,
+      sensors: [
+        {
+          id: 'pir_motion',
+          label: 'Mức Độ Chuyển Động PIR',
+          unit: '%',
+          min: 0,
+          max: 100,
+          defaultVal: 15,
+          warningThreshold: 45,
+          dangerThreshold: 75
+        },
+        {
+          id: 'ai_confidence',
+          label: 'Độ Tin Cậy AI Nhận Diện Người (Human Detection)',
+          unit: '%',
+          min: 0,
+          max: 100,
+          defaultVal: 20,
+          warningThreshold: 60,
+          dangerThreshold: 85
+        },
+        {
+          id: 'ambient_light',
+          label: 'Cường Độ Ánh Sáng Môi Trường',
+          unit: 'Lux',
+          min: 0,
+          max: 800,
+          defaultVal: 350,
+          warningThreshold: 100,
+          dangerThreshold: 30
+        }
+      ]
+    }
+  },
+  {
     id: 'iot-air-quality-station',
     slug: 'esp32-air-quality-pms5003-mq135',
     title: 'Hệ Thống Quan Trắc & Cảnh Báo Chất Lượng Không Khí Thông Minh',

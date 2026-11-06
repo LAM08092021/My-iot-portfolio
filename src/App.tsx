@@ -13,7 +13,15 @@ export function App() {
     const saved = localStorage.getItem('iot_portfolio_projects');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed: IoTProject[] = JSON.parse(saved);
+        const parsedIds = new Set(parsed.map((p) => p.id));
+        const missingDefaults = defaultProjects.filter((dp) => !parsedIds.has(dp.id));
+        if (missingDefaults.length > 0) {
+          const merged = [...missingDefaults, ...parsed];
+          localStorage.setItem('iot_portfolio_projects', JSON.stringify(merged));
+          return merged;
+        }
+        return parsed;
       } catch {
         return defaultProjects;
       }
